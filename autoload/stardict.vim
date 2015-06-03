@@ -24,24 +24,7 @@
 "=============================================================================
 
 
-" This is for setting up PYTHONPATH
-let s:script_folder_path = escape(expand('<sfile>:p:h'), '\')
 let s:stardict_buf_count = 0
-
-
-function! s:SetPythonPath() abort
-    if (g:stardict_prefer_python3) || has('python3')
-        python3 import sys
-        python3 import vim
-        execute 'python3 sys.path.insert(0, "' . s:script_folder_path . '/../python")'
-    elseif has('python')
-        python import sys
-        python import vim
-        execute 'python sys.path.insert(0, "' . s:script_folder_path . '/../python")'
-    endif
-
-    return 1
-endfunction
 
 
 function! stardict#StarDict(...)
@@ -79,39 +62,15 @@ function! stardict#StarDict(...)
 endfunction
 
 
-function! stardict#GetDefinition(...)
-    if s:SetPythonPath() != 1
-        return "Cannot set ${PATH} variable!"
+function! stardict#GetDefinition(words)
+    if empty(a:words)
+        let args = ''
+    else
+        let escaped_words = map(copy(a:words), 'shellescape(v:val)')
+        let args = join(escaped_words, ' ')
     endif
-
-    let l:argsStr = join(a:000, '\\ ')
-
-    if (g:stardict_prefer_python3) || has('python3')
-        python3 definition = GetDefinitionInner(vim.eval('a:000'))
-        let l:definition = py3eval('definition')
-    elseif has('python')
-        python definition = GetDefinitionInner(vim.eval('a:000'))
-        let l:definition = pyeval('definition')
-    endif
-
-    return l:definition
+    return split(system('sdcv -n ' . args), '\n')
 endfunction
-
-if (g:stardict_prefer_python3)
-python3 << EOF
-def GetDefinitionInner(argsStr):
-    import stardict
-
-    return stardict.getDefinition(argsStr)
-EOF
-else
-python << EOF
-def GetDefinitionInner(argsStr):
-    import stardict
-
-    return stardict.getDefinition(argsStr)
-EOF
-endif
 
 function! stardict#SourceSyntaxFile()
     let l:syntax_file_0 = '~/.vim/bundle/stardict/syntax/stardict.vim'
