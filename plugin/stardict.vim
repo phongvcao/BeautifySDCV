@@ -36,10 +36,6 @@ if !exists('g:stardict_split_horizontal')
     let g:stardict_split_horizontal = 1
 endif
 
-if !exists('g:stardict_prefer_python3')
-    let g:stardict_prefer_python3 = 1
-endif
-
 augroup StarDictFileTypeDetect
     autocmd! Syntax call stardict#SourceSyntaxFile()
 augroup END
